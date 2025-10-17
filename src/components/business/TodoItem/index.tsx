@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, HStack, IconButton, Group } from '@chakra-ui/react';
-import { LuGripVertical, LuTrash2 } from 'react-icons/lu';
+import { Box, HStack, IconButton, Group, Button } from '@chakra-ui/react';
+import { LuGripVertical, LuTrash2, LuCheck } from 'react-icons/lu';
 
 import { useMemoizedFn } from 'ahooks';
 
@@ -11,9 +11,10 @@ import { toaster } from '@/components/ui/toaster';
 export interface TodoItemProps {
   id: string;
   value: string;
+  isCompleted: boolean;
 }
 
-export const TodoItem = ({ id, value }: TodoItemProps) => {
+export const TodoItem = ({ id, value, isCompleted }: TodoItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -45,6 +46,21 @@ export const TodoItem = ({ id, value }: TodoItemProps) => {
         });
       },
     });
+  });
+
+  const handleMarkAsComplete = useMemoizedFn(() => {
+    updateTodoItem(
+      { id, isCompleted: true },
+      {
+        onSuccess: () => {
+          toaster.create({
+            title: '已标记为完成',
+            type: 'success',
+            duration: 2000,
+          });
+        },
+      },
+    );
   });
 
   return (
@@ -88,6 +104,8 @@ export const TodoItem = ({ id, value }: TodoItemProps) => {
           setIsEditing={setIsEditing}
           value={value}
           onChange={handleValueCommit}
+          disabled={isCompleted}
+          isCompleted={isCompleted}
         />
 
         {!isEditing && (
@@ -98,6 +116,20 @@ export const TodoItem = ({ id, value }: TodoItemProps) => {
             opacity={isEditing || isHovered ? 1 : 0}
             transition="opacity 0.2s"
           >
+            {!isCompleted && (
+              <Button
+                size="sm"
+                variant="ghost"
+                colorPalette="green"
+                onClick={handleMarkAsComplete}
+                _hover={{
+                  bg: 'green.subtle',
+                }}
+              >
+                <LuCheck size={16} />
+                标记为完成
+              </Button>
+            )}
             <IconButton
               aria-label="删除"
               size="sm"

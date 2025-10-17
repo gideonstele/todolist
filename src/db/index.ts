@@ -15,6 +15,7 @@ class TodoModel extends Entity<TodoListService> implements TodoRecordItem {
   value!: string;
   createdAt!: string;
   updatedAt!: string;
+  isCompleted!: boolean;
 }
 
 export class TodoListService extends Dexie {
@@ -48,6 +49,7 @@ export class TodoListService extends Dexie {
       value: payload.value,
       createdAt: now,
       updatedAt: now,
+      isCompleted: false,
     };
 
     const id = await this.todoTable.add(record);
@@ -61,10 +63,9 @@ export class TodoListService extends Dexie {
   async updateItem(payload: UpdateTodoItemPayload): Promise<number> {
     const now = dayjs().format();
 
-    console.log('updateItem', payload);
-
     return await this.todoTable.update(payload.id, {
       value: payload.value,
+      isCompleted: payload.isCompleted,
       updatedAt: now,
     });
   }
@@ -80,6 +81,7 @@ export class TodoListService extends Dexie {
       value: item.value,
       createdAt: now,
       updatedAt: now,
+      isCompleted: false,
     }));
 
     await this.todoTable.bulkAdd(records);

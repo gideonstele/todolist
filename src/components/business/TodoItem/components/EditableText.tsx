@@ -9,9 +9,19 @@ export interface EditableTextProps {
   setIsEditing: (isEditing: boolean) => void;
   value: string;
   onChange?: (value: string) => void;
+  disabled?: boolean;
+  isCompleted?: boolean;
 }
 
-export const EditableText = ({ isPending, isEditing, setIsEditing, value, onChange }: EditableTextProps) => {
+export const EditableText = ({
+  isPending,
+  isEditing,
+  setIsEditing,
+  value,
+  onChange,
+  disabled,
+  isCompleted,
+}: EditableTextProps) => {
   const [localValue, setLocalValue] = useState(value);
 
   const handleValueCommit = useMemoizedFn((details: { value: string }) => {
@@ -41,6 +51,7 @@ export const EditableText = ({ isPending, isEditing, setIsEditing, value, onChan
       onEditChange={(details) => setIsEditing(details.edit)}
       placeholder="输入待办事项..."
       selectOnFocus
+      disabled={disabled}
     >
       <Box
         flex={1}
@@ -51,16 +62,18 @@ export const EditableText = ({ isPending, isEditing, setIsEditing, value, onChan
           py={1}
           px={2}
           borderRadius="md"
-          cursor="text"
+          cursor={disabled ? 'not-allowed' : 'text'}
           minH="32px"
           display="flex"
           alignItems="center"
           _hover={{
-            bg: 'bg.subtle',
+            bg: disabled ? 'transparent' : 'bg.subtle',
           }}
           fontSize="md"
-          color="fg"
+          color={isCompleted ? 'fg.muted' : 'fg'}
           fontWeight="medium"
+          textDecoration={isCompleted ? 'line-through' : 'none'}
+          opacity={isCompleted ? 0.6 : 1}
         />
         <Editable.Input
           py={1}

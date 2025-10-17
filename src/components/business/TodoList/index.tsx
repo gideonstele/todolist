@@ -50,6 +50,7 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
           key={todo.id}
           id={todo.id}
           value={todo.value}
+          isCompleted={todo.isCompleted}
         />
       ))}
     </VStack>
