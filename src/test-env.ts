@@ -1,6 +1,16 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 let testEnv: TestEnv | null = null;
+
+export type MousePayload = {
+  x: number;
+  y: number;
+};
+
+export type WheelPayload = {
+  deltaX: number;
+  deltaY: number;
+};
 
 export class TestEnv extends EventEmitter {
   private ready = false;
@@ -19,24 +29,24 @@ export class TestEnv extends EventEmitter {
       y: number;
       deltaX?: number;
       deltaY?: number;
-    }>
+    }>,
   ) {
     const {
       data: { type, x, y, deltaX, deltaY },
     } = e;
 
     switch (type) {
-      case "MouseMove":
-        testEnv?.emit("MouseMove", { x, y });
+      case 'MouseMove':
+        testEnv?.emit('MouseMove', { x, y });
         break;
-      case "MouseDown":
-        testEnv?.emit("MouseDown", { x, y });
+      case 'MouseDown':
+        testEnv?.emit('MouseDown', { x, y });
         break;
-      case "MouseUp":
-        testEnv?.emit("MouseUp", { x, y });
+      case 'MouseUp':
+        testEnv?.emit('MouseUp', { x, y });
         break;
-      case "Wheel":
-        testEnv?.emit("Wheel", { x, y, deltaX, deltaY });
+      case 'Wheel':
+        testEnv?.emit('Wheel', { x, y, deltaX, deltaY });
         break;
     }
   }
@@ -44,12 +54,12 @@ export class TestEnv extends EventEmitter {
   init() {
     if (this.ready) return;
 
-    window.addEventListener("message", this.handleMessage);
+    window.addEventListener('message', this.handleMessage);
 
     this.ready = true;
   }
 
   depose() {
-    window.removeEventListener("message", this.handleMessage);
+    window.removeEventListener('message', this.handleMessage);
   }
 }

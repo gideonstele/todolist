@@ -4,8 +4,12 @@ import { useAllTodoItems } from './query/all';
 import { TodoList } from './components/business/TodoList';
 import { AddTodoItem } from './components/business/AddTodoItem';
 
+import { useEnvEvents } from './hooks/useEnv';
+
 function App() {
   const { data: todos, isLoading } = useAllTodoItems();
+
+  useEnvEvents();
 
   return (
     <Container
