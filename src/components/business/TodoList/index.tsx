@@ -72,63 +72,56 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
   // 处理拖拽移动事件
   // @param currentY - 当前鼠标的Y坐标
   const handleDragMove = useMemoizedFn((currentY: number) => {
-    setItems((currentItems) => {
-      let newItemsResult = currentItems;
+    if (!dragState.isDragging || dragState.draggedIndex === null || dragState.draggedId === null) {
+      return;
+    }
 
-      setDragState((prevDragState) => {
-        if (!prevDragState.isDragging || prevDragState.draggedIndex === null || prevDragState.draggedId === null) {
-          return prevDragState;
-        }
+    // 找到鼠标当前位置应该对应的索引
+    let newHoveredIndex = dragState.draggedIndex;
+    let closestDistance = Infinity;
 
-        // 找到鼠标当前位置应该对应的索引
-        let newHoveredIndex = prevDragState.draggedIndex;
-        let closestDistance = Infinity;
+    // 遍历DOM元素，找到距离鼠标最近的项目
+    itemRefs.current.forEach((element, id) => {
+      // 跳过被拖拽的项目本身
+      if (id === dragState.draggedId) return;
 
-        // 遍历DOM元素，找到距离鼠标最近的项目
-        itemRefs.current.forEach((element, id) => {
-          // 跳过被拖拽的项目本身
-          if (id === prevDragState.draggedId) return;
+      // 获取元素的位置信息
+      const rect = element.getBoundingClientRect();
+      const elementCenterY = rect.top + rect.height / 2;
+      const distance = Math.abs(currentY - elementCenterY);
 
-          // 获取元素的位置信息
-          const rect = element.getBoundingClientRect();
-          const elementCenterY = rect.top + rect.height / 2;
-          const distance = Math.abs(currentY - elementCenterY);
-
-          // 如果鼠标位置接近某个元素的中心（在元素高度的一半范围内），则考虑交换
-          if (distance < closestDistance && distance < rect.height / 2) {
-            closestDistance = distance;
-            // 需要找到这个 DOM 元素对应的索引
-            newHoveredIndex = currentItems.findIndex((item) => item.id === id);
-          }
-        });
-
-        // 如果目标位置发生变化，实时更新排序
-        if (newHoveredIndex !== -1 && newHoveredIndex !== prevDragState.draggedIndex) {
-          const newItems = [...currentItems];
-          // 从原位置移除被拖拽的项目
-          const [removed] = newItems.splice(prevDragState.draggedIndex!, 1);
-          // 插入到新位置
-          newItems.splice(newHoveredIndex, 0, removed);
-          newItemsResult = newItems;
-
-          // 更新拖拽状态，记录新的索引位置
-          return {
-            ...prevDragState,
-            currentY,
-            draggedIndex: newHoveredIndex, // 更新被拖拽项目的当前索引
-            hoveredIndex: newHoveredIndex,
-          };
-        }
-
-        // 如果位置没有变化，只更新鼠标坐标
-        return {
-          ...prevDragState,
-          currentY,
-        };
-      });
-
-      return newItemsResult;
+      // 如果鼠标位置接近某个元素的中心（在元素高度的一半范围内），则考虑交换
+      if (distance < closestDistance && distance < rect.height / 2) {
+        closestDistance = distance;
+        // 需要找到这个 DOM 元素对应的索引
+        newHoveredIndex = items.findIndex((item) => item.id === id);
+      }
     });
+
+    // 如果目标位置发生变化，实时更新排序
+    if (newHoveredIndex !== -1 && newHoveredIndex !== dragState.draggedIndex) {
+      // 更新 items 数组
+      const newItems = [...items];
+      // 从原位置移除被拖拽的项目
+      const [removed] = newItems.splice(dragState.draggedIndex, 1);
+      // 插入到新位置
+      newItems.splice(newHoveredIndex, 0, removed);
+      setItems(newItems);
+
+      // 更新拖拽状态，记录新的索引位置
+      setDragState({
+        ...dragState,
+        currentY,
+        draggedIndex: newHoveredIndex, // 更新被拖拽项目的当前索引
+        hoveredIndex: newHoveredIndex,
+      });
+    } else {
+      // 如果位置没有变化，只更新鼠标坐标
+      setDragState({
+        ...dragState,
+        currentY,
+      });
+    }
   });
 
   // 处理拖拽结束事件
