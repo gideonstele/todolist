@@ -14,15 +14,13 @@ export default function createContextContainer<HookReturn, Props extends object>
   useContainer: UseContainerFn<Props, HookReturn>,
   defaultInjection?: HookReturn,
 ) {
-
-  
   const Context = createContext<HookReturn | undefined | symbol>(nilSymbol);
 
   Context.displayName = 'Context-' + useContainer.name;
 
   function Provider({ children, ...props }: PropsWithChildren<Props>) {
     const injection = useContainer((props || {}) as Props);
-    return <Context.Provider value={injection ?? defaultInjection as HookReturn}>{children}</Context.Provider>;
+    return <Context.Provider value={injection ?? (defaultInjection as HookReturn)}>{children}</Context.Provider>;
   }
 
   const UseContainer: UseFn<HookReturn> = function () {
