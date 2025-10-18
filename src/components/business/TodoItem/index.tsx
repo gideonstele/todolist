@@ -212,6 +212,8 @@ export const TodoItem = ({
             gap={1}
             px={2}
             flexShrink={0}
+            w="72px"
+            justifyContent="flex-end"
             transition="opacity 0.2s"
           >
             {!isCompleted && (
@@ -220,12 +222,12 @@ export const TodoItem = ({
                 variant="ghost"
                 colorPalette="green"
                 onClick={handleMarkAsComplete}
+                title="标记为完成"
                 _hover={{
                   bg: 'green.subtle',
                 }}
               >
                 <LuCheck size={16} />
-                标记为完成
               </Button>
             )}
             <IconButton

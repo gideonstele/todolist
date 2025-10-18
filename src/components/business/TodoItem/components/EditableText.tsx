@@ -86,8 +86,10 @@ export const EditableText = ({
     <>
       <Box
         flex={1}
-        px={3}
+        mx={3}
         py={2}
+        maxW="calc(100% - 120px)"
+        overflow="hidden"
       >
         {isEditing ? (
           <Input
@@ -123,6 +125,8 @@ export const EditableText = ({
             display="flex"
             alignItems="center"
             fontSize="md"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
             color={isCompleted ? 'fg.muted' : 'fg'}
             fontWeight="medium"
             textDecoration={isCompleted ? 'line-through' : 'none'}
