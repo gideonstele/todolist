@@ -1,4 +1,4 @@
-export const todoTableLiteral = '$$id, value, createdAt, updatedAt, isCompleted';
+export const todoTableLiteral = '$$id, value, createdAt, updatedAt, isCompleted, order';
 export const todoSchemaName = 'todolist';
 
 export interface TodoRecordItem {
@@ -7,6 +7,7 @@ export interface TodoRecordItem {
   createdAt: string;
   updatedAt: string;
   isCompleted: boolean;
+  order: number;
 }
 
 export type AddTodoItemPayload = {

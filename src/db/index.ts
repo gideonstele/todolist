@@ -16,6 +16,7 @@ class TodoModel extends Entity<TodoListService> implements TodoRecordItem {
   createdAt!: string;
   updatedAt!: string;
   isCompleted!: boolean;
+  order!: number;
 }
 
 export class TodoListService extends Dexie {
@@ -33,23 +34,39 @@ export class TodoListService extends Dexie {
     this.version(1).stores({
       todoTable: todoTableLiteral,
     });
+    this.version(2)
+      .stores({
+        todoTable: todoTableLiteral,
+      })
+      .upgrade(async (tx) => {
+        // Add order field to existing records
+        const todos = await tx.table('todoTable').toArray();
+        for (let i = 0; i < todos.length; i++) {
+          await tx.table('todoTable').update(todos[i].id, { order: i });
+        }
+      });
     this.todoTable.mapToClass(TodoModel);
   }
 
   private todoTable!: EntityTable<TodoModel, 'id'>;
 
   async all(): Promise<TodoRecordItem[]> {
-    return await this.todoTable.toArray();
+    return await this.todoTable.orderBy('order').toArray();
   }
 
   async addItem(payload: AddTodoItemPayload): Promise<TodoRecordItem> {
     const now = dayjs().format();
+
+    // Get the max order value
+    const maxOrder = await this.todoTable.orderBy('order').last();
+    const order = maxOrder ? maxOrder.order + 1 : 0;
 
     const record = {
       value: payload.value,
       createdAt: now,
       updatedAt: now,
       isCompleted: false,
+      order,
     };
 
     const id = await this.todoTable.add(record);
@@ -84,14 +101,28 @@ export class TodoListService extends Dexie {
   async addBulkItems(payload: AddTodoItemPayload[]): Promise<void> {
     const now = dayjs().format();
 
-    const records = payload.map((item) => ({
+    // Get the max order value
+    const maxOrder = await this.todoTable.orderBy('order').last();
+    const startOrder = maxOrder ? maxOrder.order + 1 : 0;
+
+    const records = payload.map((item, index) => ({
       value: item.value,
       createdAt: now,
       updatedAt: now,
       isCompleted: false,
+      order: startOrder + index,
     }));
 
     await this.todoTable.bulkAdd(records);
+  }
+
+  async reorderItems(items: { id: string; order: number }[]): Promise<void> {
+    await this.todoTable.bulkUpdate(
+      items.map((item) => ({
+        key: item.id,
+        changes: { order: item.order },
+      })),
+    );
   }
 }
 

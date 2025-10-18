@@ -34,3 +34,14 @@ export const useAddTodoItem = () => {
     },
   });
 };
+
+export const useReorderTodoItems = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (items: { id: string; order: number }[]) => todoListService.reorderItems(items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['db/todolist/all'] });
+    },
+  });
+};

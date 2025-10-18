@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Box, HStack, IconButton, Group, Button } from '@chakra-ui/react';
 import { LuGripVertical, LuTrash2, LuCheck } from 'react-icons/lu';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { useMemoizedFn } from 'ahooks';
 
@@ -20,6 +22,8 @@ export const TodoItem = ({ id, value, isCompleted }: TodoItemProps) => {
 
   const { mutate: removeTodoItem, isPending: isRemovingTodoItem } = useRemoveTodoItem();
   const { mutate: updateTodoItem, isPending: isUpdatingTodoItem } = useUpdateTodoItem();
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const handleValueCommit = useMemoizedFn((value: string) => {
     updateTodoItem(
@@ -63,8 +67,16 @@ export const TodoItem = ({ id, value, isCompleted }: TodoItemProps) => {
     );
   });
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   return (
     <Group
+      ref={setNodeRef}
+      style={style}
       attached
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -84,6 +96,8 @@ export const TodoItem = ({ id, value, isCompleted }: TodoItemProps) => {
         position="relative"
       >
         <Box
+          {...attributes}
+          {...listeners}
           cursor="grab"
           _active={{ cursor: 'grabbing' }}
           px={3}
