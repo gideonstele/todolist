@@ -20,7 +20,6 @@ export interface TodoItemProps {
   registerRef: (id: string, element: HTMLDivElement | null) => void; // 注册DOM引用的回调
   isDragging: boolean; // 当前是否有拖拽操作正在进行
   isBeingDragged: boolean; // 当前项目是否正在被拖拽
-  dragOffset: number; // 拖拽时的Y轴偏移量（像素）
 }
 
 export const TodoItem = ({
@@ -34,7 +33,6 @@ export const TodoItem = ({
   registerRef,
   isDragging,
   isBeingDragged,
-  dragOffset,
 }: TodoItemProps) => {
   // 是否处于编辑状态
   const [isEditing, setIsEditing] = useState(false);
@@ -101,7 +99,7 @@ export const TodoItem = ({
 
   // 处理鼠标按下事件（开始拖拽）
   const handleMouseDown = useMemoizedFn((e: React.MouseEvent) => {
-    e.preventDefault(); // 阻止默认行为，避免文本选择
+    e.preventDefault();
 
     if (!itemRef.current) return;
 
@@ -135,18 +133,29 @@ export const TodoItem = ({
 
   // 动态计算列表项的样式
   const style: React.CSSProperties = {
-    // 如果正在被拖拽，应用Y轴平移
-    transform: isBeingDragged && isDragging ? `translateY(${dragOffset}px)` : undefined,
     // 正在被拖拽时降低透明度，提供视觉反馈
-    opacity: isBeingDragged && isDragging ? 0.8 : 1,
+    opacity: isBeingDragged && isDragging ? 0.9 : 1,
     // 正在被拖拽时提升层级，确保在其他元素上方
     zIndex: isBeingDragged && isDragging ? 1000 : 1,
-    // 拖拽时禁用过渡动画，使移动更跟手；其他情况启用平滑过渡
-    transition: isBeingDragged && isDragging ? 'none' : 'all 0.2s ease',
+    // 添加平滑的过渡动画效果
+    // 使用 cubic-bezier 缓动函数让动画更自然
+    transition:
+      isBeingDragged && isDragging
+        ? 'opacity 0.2s ease, box-shadow 0.2s ease, scale 0.2s ease, z-index 0s' // 拖拽时：只对透明度和阴影添加动画，transform不要动画（跟随鼠标）
+        : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 其他时候：所有属性都有平滑动画（包括位置交换）
     // 拖拽过程中禁用指针事件，避免干扰
     pointerEvents: isDragging ? 'none' : 'auto',
     // 拖拽时显示抓取光标
     cursor: isBeingDragged && isDragging ? 'grabbing' : undefined,
+    // 拖拽时添加阴影效果，增强视觉反馈
+    boxShadow:
+      isBeingDragged && isDragging
+        ? '0 10px 30px -5px rgba(0, 0, 0, 0.15), 0 8px 16px -8px rgba(0, 0, 0, 0.2)'
+        : undefined,
+    // 使用 transform 而不是修改位置属性，性能更好
+    willChange: isDragging ? 'transform, opacity' : 'auto',
+    // 添加轻微的缩放效果
+    scale: isBeingDragged && isDragging ? '1.02' : '1',
   };
 
   return (

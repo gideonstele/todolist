@@ -22,6 +22,7 @@ interface DragState {
   startY: number; // 开始拖拽时鼠标的Y坐标
   offsetY: number; // 鼠标相对于被拖拽元素顶部的偏移量
   hoveredIndex: number | null; // 当前悬停位置的索引
+  initialElementY: number; // 被拖拽元素的初始Y坐标
 }
 
 export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
@@ -38,6 +39,7 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
     startY: 0,
     offsetY: 0,
     hoveredIndex: null,
+    initialElementY: 0,
   });
 
   // 存储每个列表项的DOM引用，用于计算位置
@@ -58,6 +60,10 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
   // @param startY - 鼠标起始Y坐标
   // @param offsetY - 鼠标相对于元素顶部的偏移量
   const handleDragStart = useMemoizedFn((id: string, index: number, startY: number, offsetY: number) => {
+    // 获取被拖拽元素的初始位置
+    const element = itemRefs.current.get(id);
+    const initialElementY = element ? element.getBoundingClientRect().top : 0;
+
     setDragState({
       isDragging: true,
       draggedIndex: index,
@@ -66,6 +72,7 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
       startY,
       offsetY,
       hoveredIndex: null,
+      initialElementY,
     });
   });
 
@@ -126,38 +133,28 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
 
   // 处理拖拽结束事件
   const handleDragEnd = useMemoizedFn(() => {
-    setDragState((prev) => {
-      if (!prev.isDragging) {
-        // 如果当前没有在拖拽，直接重置状态
-        return {
-          isDragging: false,
-          draggedIndex: null,
-          draggedId: null,
-          currentY: 0,
-          startY: 0,
-          offsetY: 0,
-          hoveredIndex: null,
-        };
-      }
+    if (!dragState.isDragging) {
+      return;
+    }
 
-      // 拖拽结束，将最终的排序结果保存到数据库
-      // 注意：items 已经在 handleDragMove 中实时更新了
-      const reorderPayload = items.map((item, index) => ({
-        id: item.id,
-        order: index, // 新的排序位置
-      }));
-      reorderItems(reorderPayload);
+    // 拖拽结束，将最终的排序结果保存到数据库
+    // 注意：items 已经在 handleDragMove 中实时更新了
+    const reorderPayload = items.map((item, index) => ({
+      id: item.id,
+      order: index, // 新的排序位置
+    }));
+    reorderItems(reorderPayload);
 
-      // 重置所有拖拽状态
-      return {
-        isDragging: false,
-        draggedIndex: null,
-        draggedId: null,
-        currentY: 0,
-        startY: 0,
-        offsetY: 0,
-        hoveredIndex: null,
-      };
+    // 重置所有拖拽状态
+    setDragState({
+      isDragging: false,
+      draggedIndex: null,
+      draggedId: null,
+      currentY: 0,
+      startY: 0,
+      offsetY: 0,
+      hoveredIndex: null,
+      initialElementY: 0,
     });
   });
 
@@ -206,29 +203,30 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
       gap={3}
       align="stretch"
     >
-      {items.map((todo, index) => (
-        <TodoItem
-          key={todo.id}
-          id={todo.id}
-          index={index}
-          value={todo.value}
-          isCompleted={todo.isCompleted}
-          // 拖拽相关的回调函数
-          onDragStart={handleDragStart}
-          onDragMove={handleDragMove}
-          onDragEnd={handleDragEnd}
-          // 注册DOM引用
-          registerRef={registerItemRef}
-          // 全局是否有拖拽操作正在进行
-          isDragging={dragState.isDragging && dragState.draggedId === todo.id}
-          // 当前项目是否正在被拖拽
-          isBeingDragged={dragState.draggedId === todo.id}
-          // 计算拖拽偏移量：当前鼠标位置 - 开始拖拽时的鼠标位置
-          dragOffset={
-            dragState.isDragging && dragState.draggedId === todo.id ? dragState.currentY - dragState.startY : 0
-          }
-        />
-      ))}
+      {items.map((todo, index) => {
+        const isBeingDragged = dragState.draggedId === todo.id;
+        const isDragging = dragState.isDragging && isBeingDragged;
+
+        return (
+          <TodoItem
+            key={todo.id}
+            id={todo.id}
+            index={index}
+            value={todo.value}
+            isCompleted={todo.isCompleted}
+            // 拖拽相关的回调函数
+            onDragStart={handleDragStart}
+            onDragMove={handleDragMove}
+            onDragEnd={handleDragEnd}
+            // 注册DOM引用
+            registerRef={registerItemRef}
+            // 全局是否有拖拽操作正在进行
+            isDragging={isDragging}
+            // 当前项目是否正在被拖拽
+            isBeingDragged={isBeingDragged}
+          />
+        );
+      })}
     </VStack>
   );
 };
