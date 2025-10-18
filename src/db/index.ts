@@ -39,7 +39,7 @@ export class TodoListService extends Dexie {
   private todoTable!: EntityTable<TodoModel, 'id'>;
 
   async all(): Promise<TodoRecordItem[]> {
-    return await this.todoTable.orderBy('updatedAt').reverse().toArray();
+    return await this.todoTable.toArray();
   }
 
   async addItem(payload: AddTodoItemPayload): Promise<TodoRecordItem> {
@@ -63,9 +63,16 @@ export class TodoListService extends Dexie {
   async updateItem(payload: UpdateTodoItemPayload): Promise<number> {
     const now = dayjs().format();
 
+    const record = await this.todoTable.get(payload.id);
+
+    if (!record) {
+      throw new Error('Todo item not found');
+    }
+
     return await this.todoTable.update(payload.id, {
-      value: payload.value,
-      isCompleted: payload.isCompleted,
+      ...record,
+      value: payload.value ?? record.value,
+      isCompleted: payload.isCompleted ?? record.isCompleted,
       updatedAt: now,
     });
   }

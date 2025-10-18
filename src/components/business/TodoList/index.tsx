@@ -20,8 +20,8 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
         align="center"
       >
         <Button
-          onClick={() => addDefaultData()}
           loading={isAddingDefaultData}
+          onClick={() => addDefaultData()}
         >
           添加若干个默认数据
         </Button>

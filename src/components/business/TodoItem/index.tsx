@@ -83,13 +83,12 @@ export const TodoItem = ({ id, value, isCompleted }: TodoItemProps) => {
         gap={0}
         position="relative"
       >
-        {/* Drag Handle */}
         <Box
           cursor="grab"
           _active={{ cursor: 'grabbing' }}
           px={3}
           py={3}
-          color={isHovered ? 'fg.muted' : 'transparent'}
+          color={'fg.muted'}
           transition="color 0.2s"
           flexShrink={0}
           borderRightWidth="1px"
@@ -113,7 +112,6 @@ export const TodoItem = ({ id, value, isCompleted }: TodoItemProps) => {
             gap={1}
             px={2}
             flexShrink={0}
-            opacity={isEditing || isHovered ? 1 : 0}
             transition="opacity 0.2s"
           >
             {!isCompleted && (
