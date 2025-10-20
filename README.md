@@ -64,7 +64,7 @@ interface TodoRecordItem {
 }
 ```
 
-### 3. 状态管理
+### 2. 状态管理
 
 使用 **TanStack Query** (React Query) 管理服务端/数据库状态：
 
@@ -72,7 +72,7 @@ interface TodoRecordItem {
 - 支持乐观更新
 - 提供 loading、error 状态
 
-### 4. 拖拽排序功能 🎯
+### 3. 拖拽排序功能 🎯
 
 **完全原生实现**，不依赖 `@dnd-kit` 等第三方拖拽库。
 
@@ -119,7 +119,7 @@ const [removed] = newItems.splice(oldIndex, 1);
 newItems.splice(newIndex, 0, removed);
 ```
 
-### 5. 性能优化
+### 4. 性能优化
 
 - 使用 `useMemoizedFn` (ahooks) 避免不必要的函数重新创建
 - 使用 `useRef` 存储 DOM 引用，避免频繁查询 DOM
