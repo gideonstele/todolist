@@ -20,6 +20,7 @@ export interface TodoItemProps {
   registerRef: (id: string, element: HTMLDivElement | null) => void; // 注册DOM引用的回调
   isDragging: boolean; // 当前是否有拖拽操作正在进行
   isBeingDragged: boolean; // 当前项目是否正在被拖拽
+  dragOffset: number; // 拖拽偏移量
 }
 
 export const TodoItem = ({
@@ -33,6 +34,7 @@ export const TodoItem = ({
   registerRef,
   isDragging,
   isBeingDragged,
+  dragOffset,
 }: TodoItemProps) => {
   // 是否处于编辑状态
   const [isEditing, setIsEditing] = useState(false);
@@ -133,6 +135,7 @@ export const TodoItem = ({
 
   // 动态计算列表项的样式
   const style: React.CSSProperties = {
+    transform: isBeingDragged && isDragging ? `translateY(${dragOffset}px)` : undefined,
     // 正在被拖拽时降低透明度，提供视觉反馈
     opacity: isBeingDragged && isDragging ? 0.9 : 1,
     // 正在被拖拽时提升层级，确保在其他元素上方

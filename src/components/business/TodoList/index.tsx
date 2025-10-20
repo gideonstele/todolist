@@ -16,6 +16,7 @@ export interface TodoListProps {
 // 拖拽状态接口定义
 interface DragState {
   isDragging: boolean; // 是否正在拖拽
+  startIndex: number | null; // 开始拖拽时项目的索引
   draggedIndex: number | null; // 被拖拽项目的索引
   draggedId: string | null; // 被拖拽项目的ID
   currentY: number; // 当前鼠标的Y坐标
@@ -33,6 +34,7 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
   // 拖拽状态
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
+    startIndex: null,
     draggedIndex: null,
     draggedId: null,
     currentY: 0,
@@ -66,6 +68,7 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
 
     setDragState({
       isDragging: true,
+      startIndex: index,
       draggedIndex: index,
       draggedId: id,
       currentY: startY,
@@ -148,6 +151,7 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
     // 重置所有拖拽状态
     setDragState({
       isDragging: false,
+      startIndex: null,
       draggedIndex: null,
       draggedId: null,
       currentY: 0,
@@ -207,6 +211,16 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
         const isBeingDragged = dragState.draggedId === todo.id;
         const isDragging = dragState.isDragging && isBeingDragged;
 
+        let dragOffset = 0;
+
+        if (isDragging && dragState.startIndex !== null) {
+          dragOffset =
+            dragState.currentY -
+            dragState.offsetY -
+            dragState.initialElementY -
+            ((dragState.draggedIndex ?? 0) - dragState.startIndex) * 62 /* 62: 每个列表项的高度 */;
+        }
+
         return (
           <TodoItem
             key={todo.id}
@@ -224,6 +238,7 @@ export const TodoList = ({ dataSource, isLoading }: TodoListProps) => {
             isDragging={isDragging}
             // 当前项目是否正在被拖拽
             isBeingDragged={isBeingDragged}
+            dragOffset={dragOffset}
           />
         );
       })}

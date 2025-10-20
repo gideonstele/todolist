@@ -119,6 +119,16 @@ const [removed] = newItems.splice(oldIndex, 1);
 newItems.splice(newIndex, 0, removed);
 ```
 
+**拖拽偏移量计算：**
+
+```typescript
+dragOffset =
+  dragState.currentY /* 当前鼠标的Y坐标（绝对位置） */ -
+  dragState.offsetY /*  鼠标相对于元素顶部的偏移量（鼠标按下时记录） */ -
+  dragState.initialElementY /* 元素开始拖拽时的初始Y坐标（绝对位置） */ -
+  ((dragState.draggedIndex ?? 0) - dragState.startIndex) * 62 /* 62: 每个列表项+gap的高度 */;
+```
+
 ### 4. 性能优化
 
 - 使用 `useMemoizedFn` (ahooks) 避免不必要的函数重新创建
@@ -127,5 +137,5 @@ newItems.splice(newIndex, 0, removed);
 
 ## 已知问题
 
-- 拖拽时，被拖拽的项无法跟随鼠标指针移动；拖拽排序发生变化时没有动画效果；
+- <ins>拖拽时，被拖拽的项无法跟随鼠标指针移动；拖拽排序发生变化时没有动画效果</ins>；
 - 在TourBox沙盒内，UI无法实现hover效果，部分按钮点击不灵敏。
